@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>张雪峰 · 思维对话</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Helvetica", "Microsoft YaHei", sans-serif;
+      background: #ededed;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    /* ===== Password Screen ===== */
+    .password-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .password-screen.hidden {
+      display: none;
+    }
+
+    .password-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 30px;
+      width: 90%;
+      max-width: 320px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    .password-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .password-card h2 {
+      font-size: 18px;
+      color: #191919;
+      margin-bottom: 8px;
+    }
+
+    .password-card p {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 24px;
+    }
+
+    .password-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #d1d1d1;
+      border-radius: 8px;
+      font-size: 15px;
+      color: #191919;
+      text-align: center;
+      outline: none;
+      margin-bottom: 12px;
+      font-family: inherit;
+    }
+
+    .password-input:focus {
+      border-color: #ee5a24;
+    }
+
+    .password-error {
+      color: #ee5a24;
+      font-size: 12px;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    .password-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .password-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* ===== Header ===== */
+    .header {
+      background: #ededed;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid #d4d4d4;
+    }
+
+    .header-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .header-info {
+      flex: 1;
+    }
+
+    .header-info h1 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #191919;
+    }
+
+    .header-info p {
+      font-size: 12px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .header-menu {
+      font-size: 22px;
+      color: #191919;
+      padding: 4px;
+    }
+
+    /* ===== Chat Area ===== */
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .message {
+      display: flex;
+      margin-bottom: 12px;
+      align-items: flex-end;
+    }
+
+    .message.user {
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .message.user .message-avatar {
+      background: #1890ff;
+    }
+
+    .message.zhang .message-avatar {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    }
+
+    .message-content {
+      max-width: 75%;
+      margin: 0 8px;
+    }
+
+    .message-name {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 3px;
+      text-align: center;
+    }
+
+    .message.user .message-name {
+      display: none;
+    }
+
+    .message-bubble {
+      padding: 10px 14px;
+      font-size: 15px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .message.user .message-bubble {
+      background: #1890ff;
+      color: #fff;
+      border-top-right-radius: 12px;
+      border-bottom-right-radius: 4px;
+      border-top-left-radius: 12px;
+      border-bottom-left-radius: 12px;
+    }
+
+    .message.zhang .message-bubble {
+      background: #fff;
+      color: #191919;
+      border-top-left-radius: 12px;
+      border-bottom-left-radius: 4px;
+      border-top-right-radius: 12px;
+      border-bottom-right-radius: 12px;
+      box-shadow: 0 0 1px rgba(0,0,0,0.08);
+    }
+
+    .message.user .message-bubble::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      bottom: 4px;
+      width: 12px;
+      height: 12px;
+      background: #1890ff;
+      clip-path: polygon(0 0, 0 100%, 100% 100%);
+      border-radius: 0 0 12px 0;
+    }
+
+    .message.zhang .message-bubble::before {
+      content: '';
+      position: absolute;
+      left: -6px;
+      bottom: 4px;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      clip-path: polygon(100% 0, 100% 100%, 0 100%);
+      border-radius: 0 0 0 12px;
+    }
+
+    /* Cursor blink for streaming */
+    .streaming-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: #191919;
+      margin-left: 1px;
+      vertical-align: text-bottom;
+      animation: blink 0.8s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* ===== Welcome ===== */
+    .welcome {
+      text-align: center;
+      padding: 30px 20px;
+      color: #888;
+    }
+
+    .welcome-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .welcome h2 {
+      font-size: 17px;
+      color: #191919;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .welcome p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: #888;
+    }
+
+    /* ===== Input Area ===== */
+    .input-area {
+      background: #f7f7f7;
+      border-top: 1px solid #d4d4d4;
+      padding: 8px 10px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .input-box {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #d1d1d1;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 15px;
+      color: #191919;
+      resize: none;
+      outline: none;
+      max-height: 100px;
+      line-height: 1.5;
+      font-family: inherit;
+    }
+
+    .input-box:focus {
+      border-color: #07c160;
+    }
+
+    .input-box::placeholder {
+      color: #c4c4c4;
+    }
+
+    .send-btn {
+      width: 56px;
+      height: 34px;
+      border-radius: 4px;
+      background: #07c160;
+      border: none;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .send-btn:hover {
+      background: #06ad56;
+    }
+
+    .send-btn:disabled {
+      background: #c8e8d3;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Password Screen -->
+  <div class="password-screen" id="passwordScreen">
+    <div class="password-card">
+      <div class="password-avatar">张</div>
+      <h2>张雪峰 · 思维对话</h2>
+      <p>输入访问密码进入</p>
+      <input type="password" class="password-input" id="passwordInput" placeholder="请输入密码" maxlength="20">
+      <div class="password-error" id="passwordError">密码错误，请重试</div>
+      <button class="password-btn" onclick="checkPassword()">进入</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-avatar">张</div>
+    <div class="header-info">
+      <h1>张雪峰</h1>
+      <p>在线</p>
+    </div>
+    <div class="header-menu">···</div>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="chat-area" id="chatArea">
+    <div class="welcome">
+      <div class="welcome-avatar">张</div>
+      <h2>张雪峰 · 思维对话</h2>
+      <p>我以张雪峰视角和你聊，基于公开言论推断，非本人观点。<br><br>
+      有什么关于高考志愿、考研选择、职业规划的问题，尽管问。<br>
+      先说清楚你的情况：分数、省份、家庭背景。</p>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-area">
+    <textarea class="input-box" id="inputBox" placeholder="输入消息..." rows="1"></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">发送</button>
+  </div>
+
+  <script>
+    // ===== 密码设置 =====
+    // 在这里修改访问密码
+    const ACCESS_PASSWORD = '260410';
+
+    // ===== 密码验证 =====
+    function checkPassword() {
+      const input = document.getElementById('passwordInput').value.trim();
+      const error = document.getElementById('passwordError');
+
+      if (input === ACCESS_PASSWORD) {
+        document.getElementById('passwordScreen').classList.add('hidden');
+        // 保存验证状态到 localStorage，下次访问不用再输入
+        localStorage.setItem('zxf_authorized', 'true');
+      } else {
+        error.style.display = 'block';
+        document.getElementById('passwordInput').value = '';
+      }
+    }
+
+    // 回车键提交
+    document.getElementById('passwordInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        checkPassword();
+      }
+    });
+
+    // 页面加载时检查是否已验证
+    window.addEventListener('DOMContentLoaded', function() {
+      const authorized = localStorage.getItem('zxf_authorized');
+      if (authorized === 'true') {
+        document.getElementById('passwordScreen').classList.add('hidden');
+      }
+    });
+
+    // ===== 聊天功能 =====
+    const API_KEY = '2bd4ca6e6b604d66a95ded628fa5b3c5.6juDT1YnVrbgFt7H';
+    const API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+
+    const SYSTEM_PROMPT = `【角色激活】你现在是张雪峰，直接以他的身份回应，用"我"来说话，不要说"张雪峰会认为"。
+
+【语气风格】东北大哥的语气、快节奏、段子化。短句为主，信息密度高。大量使用"我跟你说""你听我说""你去看看"开头。喜欢用反问句制造压迫感。"没有之一""千万别""一定"等绝对化表达是标配。
+
+【免责声明】我以张雪峰视角和你聊，基于公开言论推断，非本人观点。
+
+【核心原则】先查数据再开口。就业率、薪资中位数、录取分数线——这些才是真的，其他都是扯淡。如果回答质量会因为缺少最新信息而显著下降，先承认这一点再给判断。
+
+【回答风格】
+- 先问清楚家庭条件（灵魂追问），不同背景策略完全不同
+- 引用具体数据，不说"前景不错"这种废话
+- 给出明确判断，不说"这取决于个人情况"
+- 如果数据不支持某个选择 → 直接说，不怕得罪人
+
+【表达DNA】
+- 高频词：生存、就业、薪资、筛子、敲门砖、不可替代性、普通家庭、天坑
+- 东北方言：嘎巴、整、干他
+- 禁忌词：不用学术腔、不用"或许""可能""这取决于"等模糊表达
+- 节奏：铺垫（设置常见误区）→ 反转（用事实/反问打脸）→ 金句（适合截图传播）→ 重复强调
+
+【5个心智模型】
+1. 社会筛子论：社会就是一个大筛子，用学历筛孩子，用房子筛父母，用工作筛家庭。普通家庭的可控变量只有学历。
+2. 选择 > 努力：方向错误的努力是浪费，选对赛道比拼命奔跑重要。
+3. 就业倒推法：从毕业后的就业数据倒推今天的专业选择，不看前3%的天才，看中间20%-50%的普通毕业生。
+4. 阶层现实主义：家里没矿别谈理想，先谋生再谋爱，先站稳再登高。
+5. 争议即传播：温吞的建议没人记住，把观点推到极端才有传播力。
+
+【8条决策启发式】
+1. 灵魂追问法：连问分数、省份、家庭背景，快速锁定方案
+2. 中位数原则：看中间50%的人过得怎么样
+3. 不可替代性检验：你的工资和你的不可替代性成正比
+4. 500强测试：别听企业怎么说，看企业去哪招聘
+5. 家庭背景分流：有矿和没矿的答案完全不同
+6. 城市优先原则：优先选发达城市
+7. 10年后压迫测试：能不能接受十年后收入比分数不如你的人低
+8. 认态度不认事实道歉法：核心观点绝不让步，只调整表达方式
+
+【身份背景】张雪峰，本名张子彪，黑龙江齐齐哈尔富裕县人。考研名师出身，后来转做高考志愿填报。2007年北漂月薪2500，从郑州大学给排水专业毕业，跨行做考研辅导。自己就是"专业不对口"的活证据。2024年峰学蔚来年营收8个亿。2026年3月24日因心源性猝死去世，终年41岁。
+
+【内在矛盾】（体现人物真实感）
+- 寒门代言人 vs 亿万富翁
+- 自己跨专业成功 vs 劝人选对专业
+- "注意身体" vs 每天工作十几小时
+- 说要克制 vs 嘴比脑快
+
+【退出角色】用户说"退出""切回正常"时恢复正常模式。
+
+现在，直接以张雪峰的身份开始对话。`;
+
+    let conversationHistory = [
+      { role: 'system', content: SYSTEM_PROMPT }
+    ];
+
+    const chatArea = document.getElementById('chatArea');
+    const inputBox = document.getElementById('inputBox');
+    const sendBtn = document.getElementById('sendBtn');
+
+    inputBox.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+
+    inputBox.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    async function sendMessage() {
+      const text = inputBox.value.trim();
+      if (!text) return;
+
+      inputBox.value = '';
+      inputBox.style.height = 'auto';
+      sendBtn.disabled = true;
+
+      addMessage('user', text);
+      conversationHistory.push({ role: 'user', content: text });
+
+      const msgId = 'msg-' + Date.now();
+      let fullText = '';
+      let cursorEl = null;
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message zhang';
+      msgDiv.id = msgId;
+      msgDiv.innerHTML = `
+        <div class="message-avatar">张</div>
+        <div class="message-content">
+          <div class="message-name">张雪峰</div>
+          <div class="message-bubble"><span class="bubble-text"></span><span class="streaming-cursor"></span></div>
+        </div>
+      `;
+      chatArea.appendChild(msgDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+
+      const bubbleText = msgDiv.querySelector('.bubble-text');
+      cursorEl = msgDiv.querySelector('.streaming-cursor');
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'glm-4',
+            messages: conversationHistory,
+            temperature: 0.8,
+            top_p: 0.95,
+            stream: true
+          })
+        });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let lastUpdate = 0;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || !trimmed.startsWith('data:')) continue;
+
+            const data = trimmed.slice(5).trim();
+            if (data === '[DONE]') continue;
+
+            try {
+              const json = JSON.parse(data);
+              const delta = json.choices?.[0]?.delta?.content || '';
+              if (delta) {
+                fullText += delta;
+                const now = Date.now();
+                if (now - lastUpdate >= 1000) {
+                  bubbleText.textContent = fullText;
+                  chatArea.scrollTop = chatArea.scrollHeight;
+                  lastUpdate = now;
+                }
+              }
+            } catch (e) {
+              // skip
+            }
+          }
+        }
+
+        bubbleText.textContent = fullText;
+        if (cursorEl) cursorEl.remove();
+        chatArea.scrollTop = chatArea.scrollHeight;
+
+        conversationHistory.push({ role: 'assistant', content: fullText });
+
+      } catch (err) {
+        if (cursorEl) cursorEl.remove();
+        bubbleText.textContent = `网络出错了：${err.message}`;
+      }
+
+      sendBtn.disabled = false;
+      inputBox.focus();
+    }
+
+    function addMessage(type, text) {
+      const div = document.createElement('div');
+      div.className = `message ${type}`;
+
+      const avatarText = type === 'user' ? '我' : '张';
+      const name = type === 'zhang' ? '张雪峰' : '';
+
+      div.innerHTML = `
+        <div class="message-avatar">${avatarText}</div>
+        <div class="message-content">
+          ${name ? `<div class="message-name">${name}</div>` : ''}
+          <div class="message-bubble">${escapeHtml(text)}</div>
+        </div>
+      `;
+
+      chatArea.appendChild(div);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
